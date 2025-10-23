@@ -166,95 +166,95 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="w-[95vw] max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Registrar Hora Extra</DialogTitle>
-          <DialogDescription className="text-sm">
-            Preencha os dados da hora extra. Valor: R$ {HOURLY_RATE}/hora
+      <DialogContent className="w-[95vw] max-w-sm mx-auto max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base">Registrar Hora Extra</DialogTitle>
+          <DialogDescription className="text-xs">
+            Valor: R$ {HOURLY_RATE}/hora
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-medium">Data</Label>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor="date" className="text-xs font-medium">Data</Label>
             <Input
               id="date"
               name="date"
               type="date"
               required
               max={new Date().toISOString().split('T')[0]}
-              className="w-full text-sm"
+              className="w-full text-sm h-9"
             />
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="startTime" className="text-sm font-medium">Hora Início</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label htmlFor="startTime" className="text-xs font-medium">Início</Label>
               <Input
                 id="startTime"
                 name="startTime"
                 type="time"
                 required
                 onChange={handleTimeChange}
-                className="w-full text-sm"
+                className="w-full text-sm h-9"
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="endTime" className="text-sm font-medium">Hora Fim</Label>
+            <div className="space-y-1">
+              <Label htmlFor="endTime" className="text-xs font-medium">Fim</Label>
               <Input
                 id="endTime"
                 name="endTime"
                 type="time"
                 required
                 onChange={handleTimeChange}
-                className="w-full text-sm"
+                className="w-full text-sm h-9"
               />
             </div>
           </div>
 
           {/* Checkbox para horário de almoço */}
-          <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg border">
+          <div className="flex items-center space-x-2 p-2 bg-muted/50 rounded-lg border">
             <Checkbox
               id="lunchDiscount"
               checked={lunchDiscount}
               onCheckedChange={handleLunchChange}
               className="h-4 w-4"
             />
-            <Label htmlFor="lunchDiscount" className="text-sm font-medium cursor-pointer flex-1">
-              Fez horário de almoço (desconto de 1h)
+            <Label htmlFor="lunchDiscount" className="text-xs font-medium cursor-pointer flex-1">
+              Fez almoço (-1h)
             </Label>
           </div>
           
           {calculation && (
             <Card className="bg-muted/50">
-              <CardContent className="pt-3 space-y-2">
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                  <Calculator className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-                  <span>Cálculo Automático:</span>
+              <CardContent className="pt-2 space-y-1">
+                <div className="flex items-center gap-1 text-xs font-medium">
+                  <Calculator className="h-3 w-3 text-primary" />
+                  <span>Cálculo:</span>
                 </div>
                 
-                <div className="space-y-1 text-xs sm:text-sm">
+                <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total de Horas:</span>
+                    <span className="text-muted-foreground">Total:</span>
                     <span className="font-medium">{calculation.totalHours.toFixed(2)}h</span>
                   </div>
                   
                   {calculation.lunchDiscount && (
                     <div className="flex justify-between text-amber-600">
-                      <span>Desconto Almoço:</span>
+                      <span>Almoço:</span>
                       <span className="font-medium">-1.00h</span>
                     </div>
                   )}
                   
                   <div className="flex justify-between border-t pt-1">
-                    <span className="text-muted-foreground">Horas Válidas:</span>
+                    <span className="text-muted-foreground">Líquido:</span>
                     <span className="font-semibold">{calculation.netHours.toFixed(2)}h</span>
                   </div>
                   
                   <div className="flex justify-between text-success border-t pt-1">
-                    <span className="font-medium">Valor Total:</span>
-                    <span className="font-bold text-sm sm:text-lg">
+                    <span className="font-medium">Valor:</span>
+                    <span className="font-bold text-sm">
                       R$ {calculation.totalValue.toFixed(2)}
                     </span>
                   </div>
@@ -263,21 +263,21 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
             </Card>
           )}
           
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+          <div className="flex gap-2 pt-1">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="w-full sm:flex-1 text-sm"
+              className="flex-1 text-xs h-8"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isLoading || !calculation}
-              className="w-full sm:flex-1 text-sm"
+              className="flex-1 text-xs h-8"
             >
-              {isLoading ? 'Salvando...' : 'Salvar Registro'}
+              {isLoading ? 'Salvando...' : 'Salvar'}
             </Button>
           </div>
         </form>

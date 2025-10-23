@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { AddOvertimeDialog } from '@/components/AddOvertimeDialog';
+import { OvertimeRecordActions } from '@/components/OvertimeRecordActions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -82,25 +83,25 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-            <p className="text-muted-foreground mt-1">
+            <h2 className="text-xl sm:text-3xl font-bold tracking-tight">Dashboard</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Acompanhe suas horas extras
             </p>
           </div>
           <AddOvertimeDialog onSuccess={fetchRecords} />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Horas</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-medium">Total de Horas</CardTitle>
+              <Clock className="h-3 w-3 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-lg sm:text-2xl font-bold text-primary">
                 {stats.totalHours.toFixed(2)}h
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -111,11 +112,11 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-medium">Valor Total</CardTitle>
+              <DollarSign className="h-3 w-3 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-success">
+              <div className="text-lg sm:text-2xl font-bold text-success">
                 R$ {stats.totalValue.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -126,11 +127,11 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Registros</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-medium">Registros</CardTitle>
+              <TrendingUp className="h-3 w-3 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-lg sm:text-2xl font-bold">
                 {stats.recordCount}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -141,9 +142,9 @@ export default function Dashboard() {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Histórico de Lançamentos</CardTitle>
-            <CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm sm:text-base">Histórico de Lançamentos</CardTitle>
+            <CardDescription className="text-xs">
               Seus registros de horas extras mais recentes
             </CardDescription>
           </CardHeader>
@@ -159,43 +160,39 @@ export default function Dashboard() {
                 <p className="text-sm mt-1">Clique em "Adicionar Hora Extra" para começar</p>
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Período</TableHead>
-                      <TableHead>Desconto Almoço</TableHead>
-                      <TableHead>Horas Válidas</TableHead>
-                      <TableHead className="text-right">Valor</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {records.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-medium">
-                          {formatDate(record.date)}
-                        </TableCell>
-                        <TableCell>
-                          {formatTime(record.start_time)} - {formatTime(record.end_time)}
-                        </TableCell>
-                        <TableCell>
-                          {record.lunch_discount ? (
-                            <Badge variant="secondary">Sim (1h)</Badge>
-                          ) : (
-                            <Badge variant="outline">Não</Badge>
+              <div className="space-y-2">
+                {records.map((record) => (
+                  <Card key={record.id} className="p-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium">
+                            {formatDate(record.date)}
+                          </span>
+                          {record.lunch_discount && (
+                            <Badge variant="secondary" className="text-xs">Almoço</Badge>
                           )}
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          {Number(record.net_hours).toFixed(2)}h
-                        </TableCell>
-                        <TableCell className="text-right font-bold text-success">
-                          R$ {Number(record.total_value).toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          {formatTime(record.start_time)} - {formatTime(record.end_time)}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="font-medium">
+                            {Number(record.net_hours).toFixed(2)}h
+                          </span>
+                          <span className="font-bold text-success">
+                            R$ {Number(record.total_value).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                      <OvertimeRecordActions 
+                        record={record} 
+                        onUpdate={fetchRecords}
+                        onDelete={fetchRecords}
+                      />
+                    </div>
+                  </Card>
+                ))}
               </div>
             )}
           </CardContent>
