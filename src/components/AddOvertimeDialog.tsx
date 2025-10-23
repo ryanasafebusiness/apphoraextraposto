@@ -12,9 +12,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Calculator } from 'lucide-react';
+import { Plus, Calculator, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { isValidDate, isValidTime, sanitizeInput } from '@/utils/security';
 
 const HOURLY_RATE = 15.57;
@@ -23,6 +24,7 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [lunchDiscount, setLunchDiscount] = useState(false);
   const [calculation, setCalculation] = useState<{
     totalHours: number;
     lunchDiscount: boolean;
@@ -30,7 +32,7 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
     totalValue: number;
   } | null>(null);
 
-  const calculateOvertime = (startTime: string, endTime: string) => {
+  const calculateOvertime = (startTime: string, endTime: string, hasLunch: boolean) => {
     if (!startTime || !endTime) return null;
 
     const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -43,7 +45,7 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
     if (totalMinutes < 0) totalMinutes += 24 * 60; // Handle overnight shifts
 
     const totalHours = totalMinutes / 60;
-    const lunchDiscount = totalHours >= 6;
+    const lunchDiscount = hasLunch; // Use the checkbox value
     const netHours = lunchDiscount ? totalHours - 1 : totalHours;
     const totalValue = netHours * HOURLY_RATE;
 
@@ -64,7 +66,22 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
     const endTime = formData.get('endTime') as string;
 
     if (startTime && endTime) {
-      const calc = calculateOvertime(startTime, endTime);
+      const calc = calculateOvertime(startTime, endTime, lunchDiscount);
+      setCalculation(calc);
+    }
+  };
+
+  const handleLunchChange = (checked: boolean) => {
+    setLunchDiscount(checked);
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
+
+    if (startTime && endTime) {
+      const calc = calculateOvertime(startTime, endTime, checked);
       setCalculation(calc);
     }
   };
@@ -121,7 +138,7 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
         start_time: sanitizedStartTime,
         end_time: sanitizedEndTime,
         total_hours: calculation.totalHours,
-        lunch_discount: calculation.lunchDiscount,
+        lunch_discount: lunchDiscount,
         net_hours: calculation.netHours,
         hourly_rate: HOURLY_RATE,
         total_value: calculation.totalValue,
@@ -143,65 +160,81 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="gap-2">
-          <Plus className="h-5 w-5" />
-          Adicionar Hora Extra
+        <Button size="lg" className="gap-2 w-full sm:w-auto">
+          <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="text-sm sm:text-base">Adicionar Hora Extra</span>
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-[95vw] max-w-md mx-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Hora Extra</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Registrar Hora Extra</DialogTitle>
+          <DialogDescription className="text-sm">
             Preencha os dados da hora extra. Valor: R$ {HOURLY_RATE}/hora
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="date">Data</Label>
+            <Label htmlFor="date" className="text-sm font-medium">Data</Label>
             <Input
               id="date"
               name="date"
               type="date"
               required
               max={new Date().toISOString().split('T')[0]}
+              className="w-full text-sm"
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="startTime">Hora Início</Label>
+              <Label htmlFor="startTime" className="text-sm font-medium">Hora Início</Label>
               <Input
                 id="startTime"
                 name="startTime"
                 type="time"
                 required
                 onChange={handleTimeChange}
+                className="w-full text-sm"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="endTime">Hora Fim</Label>
+              <Label htmlFor="endTime" className="text-sm font-medium">Hora Fim</Label>
               <Input
                 id="endTime"
                 name="endTime"
                 type="time"
                 required
                 onChange={handleTimeChange}
+                className="w-full text-sm"
               />
             </div>
+          </div>
+
+          {/* Checkbox para horário de almoço */}
+          <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg border">
+            <Checkbox
+              id="lunchDiscount"
+              checked={lunchDiscount}
+              onCheckedChange={handleLunchChange}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="lunchDiscount" className="text-sm font-medium cursor-pointer flex-1">
+              Fez horário de almoço (desconto de 1h)
+            </Label>
           </div>
           
           {calculation && (
             <Card className="bg-muted/50">
-              <CardContent className="pt-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Calculator className="h-4 w-4 text-primary" />
+              <CardContent className="pt-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                  <Calculator className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
                   <span>Cálculo Automático:</span>
                 </div>
                 
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text-xs sm:text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Total de Horas:</span>
                     <span className="font-medium">{calculation.totalHours.toFixed(2)}h</span>
@@ -221,7 +254,7 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
                   
                   <div className="flex justify-between text-success border-t pt-1">
                     <span className="font-medium">Valor Total:</span>
-                    <span className="font-bold text-lg">
+                    <span className="font-bold text-sm sm:text-lg">
                       R$ {calculation.totalValue.toFixed(2)}
                     </span>
                   </div>
@@ -230,19 +263,19 @@ export function AddOvertimeDialog({ onSuccess }: { onSuccess: () => void }) {
             </Card>
           )}
           
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="flex-1"
+              className="w-full sm:flex-1 text-sm"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isLoading || !calculation}
-              className="flex-1"
+              className="w-full sm:flex-1 text-sm"
             >
               {isLoading ? 'Salvando...' : 'Salvar Registro'}
             </Button>
