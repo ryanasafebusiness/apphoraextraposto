@@ -10,29 +10,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: {
-    headers: {
-      // Security headers for development
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'X-XSS-Protection': '1; mode=block',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-    },
-    // Disable host check for security
-    host: 'localhost',
-    port: 8080,
-    strictPort: true,
-  },
   build: {
-    // Security optimizations for production build
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.log in production
-        drop_debugger: true,
-      },
-    },
+    // Optimizations for production build
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         // Add content hashing for cache busting
@@ -42,14 +22,10 @@ export default defineConfig({
       },
     },
     // Add source map only in development
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: false,
   },
   define: {
-    // Remove process.env references in production
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    // Environment variables
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
   },
-  // Security: Disable directory listing
-  publicDir: 'public',
-  // Security: Limit file access
-  assetsInclude: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.ico'],
 })
